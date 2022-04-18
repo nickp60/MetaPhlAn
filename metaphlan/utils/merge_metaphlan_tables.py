@@ -36,26 +36,29 @@ def merge( aaastrIn, ostm ):
         if len(mpaVersion):
             listmpaVersion.add(mpaVersion[0])
         else:
-            print('merge_metaphlan_tables found tables without a header including the database version. Exiting.\n')
+            print('merge_metaphlan_tables found tables (eg %s ) without a header including the database version. Exiting.\n' %f)
             return
         if len(listmpaVersion) > 1:
-            print('merge_metaphlan_tables found tables made with different versions of the MetaPhlAn database.\nPlease re-run MetaPhlAn with the same database.\n')
+            print('merge_metaphlan_tables found tables (eg %s ) made with different versions of the MetaPhlAn database.\nInitial version detected as %f, this file had %f\nPlease re-run MetaPhlAn with the same database.\n' %(f, listmpaVersion[0]. mpaVersion))
             return
-        
-        iIn = pd.read_csv(f, 
-                          sep='\t',
-                          skiprows=len(headers),
-                          names = names,
-                          usecols=range(3),
-                        ).fillna('')
+        try:
+            iIn = pd.read_csv(f,
+                              sep='\t',
+                              skiprows=len(headers),
+                              names = names,
+                              usecols=range(3),
+                              ).fillna('')
+        except ValueError as e:
+            print(f)
+            raise(e)
         iIn = iIn.set_index(iIn.columns[index_col].to_list())
         if merged_tables.empty:
             merged_tables = iIn.iloc[:,0].rename(os.path.splitext(os.path.basename(f))[0]).to_frame()
         else:
             merged_tables = pd.merge(iIn.iloc[:,0].rename(os.path.splitext(os.path.basename(f))[0]).to_frame(),
                                     merged_tables,
-                                    how='outer', 
-                                    left_index=True, 
+                                    how='outer',
+                                    left_index=True,
                                     right_index=True
                                     )
     if listmpaVersion:
